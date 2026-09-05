@@ -1,0 +1,282 @@
+/* =========================================================
+   CLIMATICA
+   CHUNK 17 — FINAL POLISH
+========================================================= */
+
+
+/* =========================================================
+   GLOBAL SAFETY
+========================================================= */
+
+html {
+  scroll-behavior: smooth;
+
+  scroll-padding-top: 85px;
+}
+
+
+body {
+  min-width: 320px;
+
+  overflow-x: hidden;
+}
+
+
+#root {
+  width: 100%;
+
+  min-height: 100vh;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+
+img {
+  height: auto;
+}
+
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+
+button,
+a {
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline:
+    2px solid
+    #32ca8b;
+
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   BODY COPY
+========================================================= */
+
+body {
+  line-height: 1.5;
+}
+
+
+p {
+  text-wrap: pretty;
+}
+
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+
+/* =========================================================
+   DON'T ALLOW HUGE WORDS TO BREAK MOBILE
+========================================================= */
+
+h1,
+h2,
+h3,
+p,
+span,
+strong,
+a {
+  overflow-wrap: break-word;
+}
+
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+
+textarea {
+  resize: vertical;
+}
+
+
+/* =========================================================
+   MOBILE FORM FIX
+   Prevents iPhone Safari auto zoom.
+========================================================= */
+
+@media (max-width: 700px) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+}
+
+
+/* =========================================================
+   BUTTON TOUCH TARGET
+========================================================= */
+
+@media (max-width: 700px) {
+
+  button,
+  a {
+    -webkit-tap-highlight-color:
+      transparent;
+  }
+
+}
+
+
+/* =========================================================
+   PUBLIC PAGE RESPONSIVE SAFETY
+========================================================= */
+
+@media (max-width: 700px) {
+
+  main,
+  section,
+  article {
+    min-width: 0;
+  }
+
+
+  img {
+    max-width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   SMOOTHER CARDS
+========================================================= */
+
+@media (
+  hover: hover
+) and (
+  pointer: fine
+) {
+
+  button,
+  a {
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+}
+
+
+/* =========================================================
+   NICE SELECTION
+========================================================= */
+
+::selection {
+  color: #042117;
+
+  background: #60e2ac;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #8fa49a
+    transparent;
+}
+
+
+*::-webkit-scrollbar {
+  width: 7px;
+
+  height: 7px;
+}
+
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: #8fa49a;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior:
+      auto !important;
+
+    animation-duration:
+      0.01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      0.01ms !important;
+  }
+
+}

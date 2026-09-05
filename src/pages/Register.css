@@ -1,0 +1,1256 @@
+/* =========================================================
+   CLIMATICA REGISTER
+   SCOPED — WILL NOT AFFECT LOGIN
+========================================================= */
+
+.climatica-register-page {
+  --register-green: #087b53;
+  --register-green-dark: #05583d;
+  --register-accent: #43dda0;
+
+  --register-cream: #f5f2e8;
+  --register-card: #fbfaf5;
+
+  --register-text: #163329;
+  --register-muted: #6d7c73;
+
+  --register-border:
+    rgba(255, 255, 255, 0.13);
+
+  position: relative;
+
+  width: 100%;
+
+  min-height: 100vh;
+  min-height: 100svh;
+
+  overflow-x: hidden;
+
+  color: white;
+
+  background-position: center;
+
+  background-repeat: no-repeat;
+
+  background-size: cover;
+}
+
+
+.climatica-register-page *,
+.climatica-register-page *::before,
+.climatica-register-page *::after {
+  box-sizing: border-box;
+}
+
+
+.climatica-register-page button,
+.climatica-register-page input {
+  font: inherit;
+}
+
+
+/* =========================================================
+   BACKGROUND OVERLAY
+========================================================= */
+
+.climatica-register-page
+.climatica-auth-overlay {
+  position: fixed;
+
+  z-index: 0;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 20% 40%,
+      rgba(48, 205, 143, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(
+      110deg,
+      rgba(2, 23, 15, 0.92),
+      rgba(2, 27, 17, 0.86) 45%,
+      rgba(3, 38, 25, 0.76)
+    );
+}
+
+
+/* =========================================================
+   TOP NAV
+========================================================= */
+
+.climatica-register-page
+.climatica-auth-nav {
+  position: relative;
+
+  z-index: 3;
+
+  width: min(
+    calc(100% - 48px),
+    1240px
+  );
+
+  min-height: 88px;
+
+  margin:
+    0
+    auto;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.climatica-register-page
+.climatica-auth-logo {
+  display: inline-flex;
+
+  align-items: center;
+
+  text-decoration: none;
+}
+
+
+.climatica-register-page
+.climatica-auth-logo img {
+  display: block;
+
+  width: auto;
+
+  height: 41px;
+}
+
+
+.climatica-register-page
+.climatica-auth-back {
+  min-height: 42px;
+
+  padding:
+    0
+    13px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color:
+    rgba(255, 255, 255, 0.74);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  font-size: 13px;
+
+  font-weight: 650;
+
+  text-decoration: none;
+
+  backdrop-filter:
+    blur(8px);
+
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.climatica-register-page
+.climatica-auth-back:hover {
+  color: white;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.climatica-register-page
+.climatica-register-layout {
+  position: relative;
+
+  z-index: 2;
+
+  width: min(
+    calc(100% - 48px),
+    1240px
+  );
+
+  margin:
+    0
+    auto;
+
+  padding:
+    45px
+    0
+    70px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(310px, 0.72fr)
+    minmax(580px, 1.28fr);
+
+  gap:
+    clamp(
+      40px,
+      7vw,
+      100px
+    );
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   LEFT HEADING
+========================================================= */
+
+.climatica-register-page
+.register-heading {
+  position: sticky;
+
+  top: 120px;
+
+  padding-top: 24px;
+}
+
+
+.climatica-register-page
+.climatica-auth-eyebrow {
+  width: fit-content;
+
+  margin-bottom: 20px;
+
+  padding:
+    8px
+    11px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #87edc1;
+
+  border:
+    1px solid
+    rgba(126, 236, 190, 0.18);
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.05);
+
+  font-size: 12px;
+
+  font-weight: 750;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.07em;
+}
+
+
+.climatica-register-page
+.register-heading h1 {
+  max-width: 540px;
+
+  margin:
+    0
+    0
+    22px;
+
+  color: white;
+
+  font-size:
+    clamp(
+      4rem,
+      6.7vw,
+      7.2rem
+    );
+
+  line-height: 0.88;
+
+  letter-spacing: -0.075em;
+}
+
+
+.climatica-register-page
+.register-heading h1 span {
+  color:
+    var(--register-accent);
+}
+
+
+.climatica-register-page
+.register-heading > p {
+  max-width: 440px;
+
+  margin: 0;
+
+  color:
+    rgba(255, 255, 255, 0.64);
+
+  font-size: 15px;
+
+  line-height: 1.72;
+}
+
+
+/* =========================================================
+   MAIN FORM CARD
+========================================================= */
+
+.climatica-register-page
+.register-main-card {
+  min-width: 0;
+
+  padding:
+    clamp(
+      25px,
+      3vw,
+      36px
+    );
+
+  color:
+    var(--register-text);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.35);
+
+  border-radius: 24px;
+
+  background:
+    rgba(248, 247, 240, 0.96);
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 0, 0, 0.25);
+
+  backdrop-filter:
+    blur(14px);
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.climatica-register-page
+.register-section {
+  padding:
+    4px
+    0
+    31px;
+}
+
+
+.climatica-register-page
+.register-section
++ .register-section {
+  padding-top: 30px;
+
+  border-top:
+    1px solid
+    #dce2dd;
+}
+
+
+.climatica-register-page
+.register-section-heading {
+  margin-bottom: 22px;
+
+  display: grid;
+
+  grid-template-columns:
+    45px
+    minmax(0, 1fr);
+
+  gap: 14px;
+
+  align-items: start;
+}
+
+
+.climatica-register-page
+.register-section-heading
+> span {
+  width: 42px;
+
+  height: 42px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: var(--register-green);
+
+  border:
+    1px solid
+    #cbded3;
+
+  border-radius: 50%;
+
+  background: #edf5f0;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+
+.climatica-register-page
+.register-section-heading h2 {
+  margin:
+    0
+    0
+    5px;
+
+  color:
+    var(--register-text);
+
+  font-size:
+    clamp(
+      1.45rem,
+      2vw,
+      1.9rem
+    );
+
+  line-height: 1.1;
+
+  letter-spacing: -0.035em;
+}
+
+
+.climatica-register-page
+.register-section-heading p {
+  margin: 0;
+
+  color:
+    var(--register-muted);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   ACCOUNT TYPE GRID
+========================================================= */
+
+.climatica-register-page
+.account-type-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+}
+
+
+.climatica-register-page
+.account-type-card {
+  position: relative;
+
+  min-width: 0;
+
+  min-height: 130px;
+
+  padding:
+    15px;
+
+  display: grid;
+
+  grid-template-columns:
+    43px
+    minmax(0, 1fr)
+    26px;
+
+  gap: 11px;
+
+  align-items: start;
+
+  color:
+    var(--register-text);
+
+  border:
+    1px solid
+    #d7ded9;
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.83);
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.climatica-register-page
+.account-type-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color: #a7cdb8;
+
+  background: white;
+
+  box-shadow:
+    0 10px 24px
+    rgba(6, 47, 30, 0.06);
+}
+
+
+.climatica-register-page
+.account-type-card.active {
+  border-color:
+    #72b795;
+
+  background:
+    #eef8f2;
+
+  box-shadow:
+    inset
+    0 0 0 1px
+    rgba(8, 123, 83, 0.07);
+}
+
+
+.climatica-register-page
+.account-type-icon {
+  width: 43px;
+
+  height: 43px;
+
+  display: grid;
+
+  place-items: center;
+
+  color:
+    var(--register-green);
+
+  border-radius: 11px;
+
+  background: #e7f3ec;
+}
+
+
+.climatica-register-page
+.account-type-card.active
+.account-type-icon {
+  color: white;
+
+  background:
+    var(--register-green);
+}
+
+
+.climatica-register-page
+.account-type-copy {
+  min-width: 0;
+}
+
+
+.climatica-register-page
+.account-type-copy strong {
+  display: block;
+
+  margin:
+    2px
+    0
+    6px;
+
+  font-size: 14px;
+}
+
+
+.climatica-register-page
+.account-type-copy p {
+  margin: 0;
+
+  color: #708078;
+
+  font-size: 12px;
+
+  line-height: 1.48;
+}
+
+
+.climatica-register-page
+.account-type-check {
+  width: 24px;
+
+  height: 24px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: white;
+
+  border:
+    1px solid
+    #ccd8d1;
+
+  border-radius: 50%;
+
+  background: white;
+}
+
+
+.climatica-register-page
+.account-type-card.active
+.account-type-check {
+  border-color:
+    var(--register-green);
+
+  background:
+    var(--register-green);
+}
+
+
+/* =========================================================
+   FIELDS
+========================================================= */
+
+.climatica-register-page
+.register-field-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 15px;
+}
+
+
+.climatica-register-page
+.register-password-field {
+  grid-column:
+    1 / -1;
+}
+
+
+.climatica-register-page
+.auth-form-field {
+  display: grid;
+
+  gap: 8px;
+}
+
+
+.climatica-register-page
+.auth-form-field > span {
+  color: #3f5248;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+
+.climatica-register-page
+.auth-input-wrap {
+  min-height: 51px;
+
+  padding:
+    0
+    13px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: #71837a;
+
+  border:
+    1px solid
+    #d2dbd5;
+
+  border-radius: 11px;
+
+  background: white;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.climatica-register-page
+.auth-input-wrap:focus-within {
+  border-color: #7bb899;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 123, 83, 0.07);
+}
+
+
+.climatica-register-page
+.auth-input-wrap > svg {
+  flex-shrink: 0;
+}
+
+
+.climatica-register-page
+.auth-input-wrap input {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 48px;
+
+  padding: 0;
+
+  color:
+    var(--register-text);
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+}
+
+
+.climatica-register-page
+.auth-input-wrap input::placeholder {
+  color: #9da8a1;
+}
+
+
+.climatica-register-page
+.auth-password-toggle {
+  width: 36px;
+
+  height: 36px;
+
+  padding: 0;
+
+  display: grid;
+
+  place-items: center;
+
+  flex-shrink: 0;
+
+  color: #74847b;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  cursor: pointer;
+}
+
+
+.climatica-register-page
+.auth-password-toggle:hover {
+  color:
+    var(--register-green);
+
+  background: #edf5f0;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.climatica-register-page
+.auth-form-error {
+  margin-bottom: 17px;
+
+  padding:
+    11px
+    12px;
+
+  color: #954f48;
+
+  border:
+    1px solid
+    #e7cbc7;
+
+  border-radius: 9px;
+
+  background: #fff3f1;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SUBMIT AREA
+========================================================= */
+
+.climatica-register-page
+.register-submit-row {
+  padding-top: 23px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 25px;
+
+  border-top:
+    1px solid
+    #dce2dd;
+}
+
+
+.climatica-register-page
+.register-submit-row
+> div:first-child {
+  max-width: 350px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  color: #6c7c73;
+}
+
+
+.climatica-register-page
+.register-submit-row
+> div:first-child svg {
+  margin-top: 2px;
+
+  flex-shrink: 0;
+
+  color:
+    var(--register-green);
+}
+
+
+.climatica-register-page
+.register-submit-row p {
+  margin: 0;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+.climatica-register-page
+.auth-main-button {
+  min-height: 48px;
+
+  padding:
+    0
+    17px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background:
+    var(--register-green);
+
+  box-shadow:
+    0 12px 28px
+    rgba(8, 123, 83, 0.16);
+
+  font-size: 14px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.climatica-register-page
+.auth-main-button:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  background:
+    var(--register-green-dark);
+}
+
+
+.climatica-register-page
+.auth-main-button:disabled {
+  opacity: 0.6;
+
+  cursor: wait;
+}
+
+
+/* =========================================================
+   SIGN IN COPY
+========================================================= */
+
+.climatica-register-page
+.auth-switch-copy {
+  margin:
+    20px
+    0
+    0;
+
+  color: #6f8077;
+
+  font-size: 13px;
+
+  text-align: center;
+}
+
+
+.climatica-register-page
+.auth-switch-copy a {
+  color:
+    var(--register-green);
+
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE — 1050
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .climatica-register-page
+  .climatica-register-layout {
+    grid-template-columns:
+      minmax(260px, 0.62fr)
+      minmax(520px, 1.38fr);
+
+    gap: 45px;
+  }
+
+
+  .climatica-register-page
+  .register-heading h1 {
+    font-size:
+      clamp(
+        3.8rem,
+        6.2vw,
+        5.7rem
+      );
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .climatica-register-page
+  .climatica-auth-nav {
+    width:
+      calc(100% - 36px);
+
+    min-height: 76px;
+  }
+
+
+  .climatica-register-page
+  .climatica-register-layout {
+    width:
+      calc(100% - 36px);
+
+    padding:
+      25px
+      0
+      50px;
+
+    grid-template-columns: 1fr;
+
+    gap: 34px;
+  }
+
+
+  .climatica-register-page
+  .register-heading {
+    position: relative;
+
+    top: auto;
+
+    max-width: 650px;
+
+    padding-top: 10px;
+  }
+
+
+  .climatica-register-page
+  .register-heading h1 {
+    max-width: 650px;
+
+    font-size:
+      clamp(
+        4rem,
+        11vw,
+        6rem
+      );
+  }
+
+
+  .climatica-register-page
+  .register-heading > p {
+    max-width: 570px;
+  }
+
+
+  .climatica-register-page
+  .register-main-card {
+    width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .climatica-register-page
+  .climatica-auth-nav {
+    width:
+      calc(100% - 28px);
+
+    min-height: 68px;
+  }
+
+
+  .climatica-register-page
+  .climatica-auth-logo img {
+    height: 35px;
+  }
+
+
+  .climatica-register-page
+  .climatica-auth-back {
+    min-height: 38px;
+
+    padding:
+      0
+      10px;
+
+    font-size: 12px;
+  }
+
+
+  .climatica-register-page
+  .climatica-register-layout {
+    width:
+      calc(100% - 28px);
+
+    gap: 27px;
+
+    padding:
+      18px
+      0
+      40px;
+  }
+
+
+  .climatica-register-page
+  .register-heading h1 {
+    margin-bottom: 17px;
+
+    font-size: 3.9rem;
+  }
+
+
+  .climatica-register-page
+  .register-heading > p {
+    font-size: 14px;
+  }
+
+
+  .climatica-register-page
+  .register-main-card {
+    padding:
+      22px
+      17px;
+
+    border-radius: 19px;
+  }
+
+
+  .climatica-register-page
+  .account-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .climatica-register-page
+  .account-type-card {
+    min-height: 110px;
+  }
+
+
+  .climatica-register-page
+  .register-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .climatica-register-page
+  .register-password-field {
+    grid-column: auto;
+  }
+
+
+  .climatica-register-page
+  .register-submit-row {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .climatica-register-page
+  .auth-main-button {
+    width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL PHONE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .climatica-register-page
+  .climatica-auth-back {
+    width: 40px;
+
+    padding: 0;
+
+    justify-content: center;
+
+    font-size: 0;
+  }
+
+
+  .climatica-register-page
+  .register-heading h1 {
+    font-size: 3.45rem;
+  }
+
+
+  .climatica-register-page
+  .register-main-card {
+    padding:
+      19px
+      14px;
+  }
+
+
+  .climatica-register-page
+  .register-section-heading {
+    grid-template-columns:
+      38px
+      minmax(0, 1fr);
+
+    gap: 11px;
+  }
+
+
+  .climatica-register-page
+  .register-section-heading
+  > span {
+    width: 37px;
+
+    height: 37px;
+  }
+
+
+  .climatica-register-page
+  .account-type-card {
+    grid-template-columns:
+      40px
+      minmax(0, 1fr)
+      24px;
+
+    padding: 13px;
+  }
+
+
+  .climatica-register-page
+  .account-type-icon {
+    width: 40px;
+
+    height: 40px;
+  }
+
+}

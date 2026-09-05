@@ -1,0 +1,284 @@
+/* =========================================================
+   CLIMATICA — CHUNK 16
+   GLOBAL RESPONSIVE / INTERACTION POLISH
+========================================================= */
+
+
+/* =========================================================
+   BASE
+========================================================= */
+
+html {
+  scroll-behavior: smooth;
+
+  scroll-padding-top: 90px;
+}
+
+
+body {
+  min-width: 320px;
+
+  overflow-x: hidden;
+}
+
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+
+button,
+a {
+  -webkit-tap-highlight-color:
+    transparent;
+
+  touch-action:
+    manipulation;
+}
+
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline:
+    2px solid
+    #34ca8b;
+
+  outline-offset:
+    3px;
+}
+
+
+/* =========================================================
+   ROUTE TRANSITION
+========================================================= */
+
+.public-route-transition {
+  animation:
+    climaticaRouteFade
+    0.32s
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    )
+    both;
+}
+
+
+@keyframes climaticaRouteFade {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+/* =========================================================
+   PUBLIC PAGE SAFETY
+========================================================= */
+
+.public-route-transition {
+  width: 100%;
+
+  min-width: 0;
+
+  overflow-x: hidden;
+}
+
+
+.public-route-transition
+main,
+.public-route-transition
+section,
+.public-route-transition
+article,
+.public-route-transition
+div {
+  min-width: 0;
+}
+
+
+.public-route-transition
+img {
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   TEXT WRAPPING
+========================================================= */
+
+.public-route-transition
+h1,
+.public-route-transition
+h2 {
+  text-wrap: balance;
+}
+
+
+.public-route-transition
+p {
+  text-wrap: pretty;
+}
+
+
+/* =========================================================
+   BETTER ANCHOR SCROLLING
+========================================================= */
+
+.public-route-transition
+section[id] {
+  scroll-margin-top: 95px;
+}
+
+
+/* =========================================================
+   FORM MOBILE SAFETY
+========================================================= */
+
+.public-route-transition
+input,
+.public-route-transition
+textarea,
+.public-route-transition
+select {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   TABLE / ROW OVERFLOW
+========================================================= */
+
+.public-route-transition
+table {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   TOUCH TARGETS
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .public-route-transition
+  button,
+
+  .public-route-transition
+  a {
+    min-height:
+      max(
+        40px,
+        fit-content
+      );
+  }
+
+
+  .public-route-transition
+  input,
+
+  .public-route-transition
+  select {
+    min-height: 46px;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE TEXT SAFETY
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .public-route-transition {
+    overflow-x: clip;
+  }
+
+
+  .public-route-transition
+  h1 {
+    overflow-wrap: break-word;
+  }
+
+
+  .public-route-transition
+  p {
+    overflow-wrap: break-word;
+  }
+
+}
+
+
+/* =========================================================
+   HOVER EFFECTS ONLY ON DEVICES THAT ACTUALLY HAVE HOVER
+========================================================= */
+
+@media (
+  hover: hover
+) and (
+  pointer: fine
+) {
+
+  .public-route-transition
+  button,
+
+  .public-route-transition
+  a {
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease,
+      border-color 0.2s ease,
+      background 0.2s ease;
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION ACCESSIBILITY
+========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+
+  .public-route-transition {
+    animation: none;
+  }
+
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    animation-duration:
+      0.01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      0.01ms !important;
+  }
+
+}
