@@ -25,122 +25,531 @@ import identifyBackground from "../assets/cta-leaf-bg.png";
 import demoBottle from "../assets/identify-bottle-demo.jpg";
 
 
-function Identify() {
-  const navigate = useNavigate();
+/* =========================================================
+   IMAGE COMPRESSION
 
-  const uploadInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
+   Phone camera images can easily be 5–15MB.
+   We shrink them before:
+   - sessionStorage
+   - Netlify Function
+   - Gemini
+========================================================= */
 
-  const [preview, setPreview] = useState(null);
-  const [fileName, setFileName] = useState("");
-  const [searchValue, setSearchValue] = useState("");
+function compressImage(file) {
+  return new Promise(
+    (resolve, reject) => {
+      const objectUrl =
+        URL.createObjectURL(file);
+
+      const image =
+        new Image();
 
 
-  const handleImageSelect = (event) => {
-    const file = event.target.files?.[0];
+      image.onload = () => {
+        try {
+          const MAX_SIZE =
+            1280;
 
-    if (!file) return;
+          const QUALITY =
+            0.82;
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file.");
-      return;
+
+          const originalWidth =
+            image.naturalWidth;
+
+          const originalHeight =
+            image.naturalHeight;
+
+
+          if (
+            !originalWidth ||
+            !originalHeight
+          ) {
+            throw new Error(
+              "The image could not be read."
+            );
+          }
+
+
+          const scale =
+            Math.min(
+              1,
+              MAX_SIZE /
+                Math.max(
+                  originalWidth,
+                  originalHeight
+                )
+            );
+
+
+          const width =
+            Math.max(
+              1,
+              Math.round(
+                originalWidth *
+                  scale
+              )
+            );
+
+
+          const height =
+            Math.max(
+              1,
+              Math.round(
+                originalHeight *
+                  scale
+              )
+            );
+
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+
+          canvas.width =
+            width;
+
+          canvas.height =
+            height;
+
+
+          const context =
+            canvas.getContext(
+              "2d"
+            );
+
+
+          if (!context) {
+            throw new Error(
+              "Image processing is unavailable."
+            );
+          }
+
+
+          /*
+           * White background also handles
+           * transparent PNGs cleanly.
+           */
+
+          context.fillStyle =
+            "#ffffff";
+
+          context.fillRect(
+            0,
+            0,
+            width,
+            height
+          );
+
+
+          context.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
+          );
+
+
+          const compressed =
+            canvas.toDataURL(
+              "image/jpeg",
+              QUALITY
+            );
+
+
+          resolve(
+            compressed
+          );
+        } catch (error) {
+          reject(error);
+        } finally {
+          URL.revokeObjectURL(
+            objectUrl
+          );
+        }
+      };
+
+
+      image.onerror = () => {
+        URL.revokeObjectURL(
+          objectUrl
+        );
+
+
+        reject(
+          new Error(
+            "Climatica could not read this image. Please choose another photo."
+          )
+        );
+      };
+
+
+      image.src =
+        objectUrl;
     }
+  );
+}
 
-    const reader = new FileReader();
 
-    reader.onload = () => {
-      const imageData = reader.result;
 
-      setPreview(imageData);
-      setFileName(file.name);
+/* =========================================================
+   PAGE
+========================================================= */
 
-      sessionStorage.setItem(
-        "climatica-demo-image",
-        imageData
+function Identify() {
+  const navigate =
+    useNavigate();
+
+
+  const uploadInputRef =
+    useRef(null);
+
+  const cameraInputRef =
+    useRef(null);
+
+
+  const [
+    preview,
+    setPreview,
+  ] = useState(
+    () =>
+      sessionStorage.getItem(
+        "climatica-demo-image"
+      )
+  );
+
+
+  const [
+    fileName,
+    setFileName,
+  ] = useState("");
+
+
+  const [
+    searchValue,
+    setSearchValue,
+  ] = useState("");
+
+
+  const [
+    processingImage,
+    setProcessingImage,
+  ] = useState(false);
+
+
+
+  /* =========================================================
+     IMAGE SELECT
+  ========================================================= */
+
+  const handleImageSelect =
+    async (event) => {
+
+      const file =
+        event.target.files?.[0];
+
+
+      if (!file) {
+        return;
+      }
+
+
+      if (
+        !file.type.startsWith(
+          "image/"
+        )
+      ) {
+        alert(
+          "Please select an image file."
+        );
+
+        event.target.value =
+          "";
+
+        return;
+      }
+
+
+      /*
+       * Protect against extremely
+       * large source images.
+       */
+
+      const maxOriginalSize =
+        20 *
+        1024 *
+        1024;
+
+
+      if (
+        file.size >
+        maxOriginalSize
+      ) {
+        alert(
+          "That image is too large. Please choose an image under 20 MB."
+        );
+
+        event.target.value =
+          "";
+
+        return;
+      }
+
+
+      setProcessingImage(
+        true
       );
 
-      sessionStorage.removeItem(
-        "climatica-demo-item"
-      );
+
+      try {
+        const imageData =
+          await compressImage(
+            file
+          );
+
+
+        setPreview(
+          imageData
+        );
+
+
+        setFileName(
+          file.name
+        );
+
+
+        /*
+         * Store the compressed image
+         * for the Analysing page.
+         */
+
+        sessionStorage.setItem(
+          "climatica-demo-image",
+          imageData
+        );
+
+
+        /*
+         * Uploaded image now takes
+         * priority over demo examples.
+         */
+
+        sessionStorage.removeItem(
+          "climatica-demo-item"
+        );
+
+
+        /*
+         * Remove stale previous results.
+         */
+
+        sessionStorage.removeItem(
+          "climatica-ai-result"
+        );
+
+
+        sessionStorage.removeItem(
+          "climatica-ai-error"
+        );
+
+      } catch (error) {
+        console.error(
+          "Image preparation failed:",
+          error
+        );
+
+
+        alert(
+          error?.message ||
+            "Climatica could not prepare this image."
+        );
+
+
+        event.target.value =
+          "";
+      } finally {
+        setProcessingImage(
+          false
+        );
+      }
     };
 
-    reader.readAsDataURL(file);
-  };
 
+
+  /* =========================================================
+     REMOVE IMAGE
+  ========================================================= */
 
   const removeImage = () => {
     setPreview(null);
+
     setFileName("");
+
 
     sessionStorage.removeItem(
       "climatica-demo-image"
     );
 
-    if (uploadInputRef.current) {
-      uploadInputRef.current.value = "";
+
+    sessionStorage.removeItem(
+      "climatica-ai-result"
+    );
+
+
+    sessionStorage.removeItem(
+      "climatica-ai-error"
+    );
+
+
+    if (
+      uploadInputRef.current
+    ) {
+      uploadInputRef.current.value =
+        "";
     }
 
-    if (cameraInputRef.current) {
-      cameraInputRef.current.value = "";
+
+    if (
+      cameraInputRef.current
+    ) {
+      cameraInputRef.current.value =
+        "";
     }
   };
 
+
+
+  /* =========================================================
+     REAL IMAGE ANALYSIS
+  ========================================================= */
 
   const analyseImage = () => {
-    if (!preview) return;
+    if (
+      !preview ||
+      processingImage
+    ) {
+      return;
+    }
 
-    navigate("/analysing");
+
+    sessionStorage.removeItem(
+      "climatica-ai-result"
+    );
+
+
+    sessionStorage.removeItem(
+      "climatica-ai-error"
+    );
+
+
+    navigate(
+      "/analysing"
+    );
   };
 
+
+
+  /* =========================================================
+     DEMO BOTTLE
+  ========================================================= */
 
   const useDemoBottle = () => {
     sessionStorage.removeItem(
       "climatica-demo-image"
     );
 
+
+    sessionStorage.removeItem(
+      "climatica-ai-result"
+    );
+
+
+    sessionStorage.removeItem(
+      "climatica-ai-error"
+    );
+
+
     sessionStorage.setItem(
       "climatica-demo-item",
       "Plastic bottle"
     );
 
-    navigate("/analysing");
-  };
 
-
-  const analyseExample = (item) => {
-    sessionStorage.removeItem(
-      "climatica-demo-image"
+    navigate(
+      "/analysing"
     );
-
-    sessionStorage.setItem(
-      "climatica-demo-item",
-      item
-    );
-
-    navigate("/analysing");
   };
 
 
-  const handleManualSearch = () => {
-    const item = searchValue.trim();
 
-    if (!item) return;
+  /* =========================================================
+     MANUAL DEMO ITEMS
+  ========================================================= */
 
-    analyseExample(item);
-  };
+  const analyseExample =
+    (item) => {
+
+      sessionStorage.removeItem(
+        "climatica-demo-image"
+      );
+
+
+      sessionStorage.removeItem(
+        "climatica-ai-result"
+      );
+
+
+      sessionStorage.removeItem(
+        "climatica-ai-error"
+      );
+
+
+      sessionStorage.setItem(
+        "climatica-demo-item",
+        item
+      );
+
+
+      navigate(
+        "/analysing"
+      );
+    };
+
+
+
+  const handleManualSearch =
+    () => {
+
+      const item =
+        searchValue.trim();
+
+
+      if (!item) {
+        return;
+      }
+
+
+      analyseExample(
+        item
+      );
+    };
+
 
 
   return (
     <main
       className="identify-page-v2"
       style={{
-        backgroundImage: `url(${identifyBackground})`,
+        backgroundImage:
+          `url(${identifyBackground})`,
       }}
     >
 
-      {/* BACKGROUND TREATMENT */}
-
       <div className="identify-bg-overlay" />
+
       <div className="identify-bg-softness" />
 
 
@@ -165,7 +574,9 @@ function Identify() {
           to="/"
           className="identify-v2-back"
         >
-          <ArrowLeft size={15} />
+          <ArrowLeft
+            size={15}
+          />
 
           <span>
             Back home
@@ -181,13 +592,13 @@ function Identify() {
 
       <section className="identify-v2-main">
 
-        {/* INTRO */}
-
         <div className="identify-v2-heading">
 
           <div className="identify-v2-eyebrow">
 
-            <Sparkles size={13} />
+            <Sparkles
+              size={13}
+            />
 
             Identify Waste
 
@@ -209,13 +620,16 @@ function Identify() {
 
 
         {/* =====================================
-            DEMO / SELECTED IMAGE
+            PHOTO
         ====================================== */}
 
         <div className="identify-photo-card">
 
           <img
-            src={preview || demoBottle}
+            src={
+              preview ||
+              demoBottle
+            }
             alt={
               preview
                 ? "Selected waste item"
@@ -228,11 +642,12 @@ function Identify() {
           <div className="identify-photo-overlay" />
 
 
-          {/* CAMERA CORNERS */}
-
           <span className="photo-corner photo-corner-tl" />
+
           <span className="photo-corner photo-corner-tr" />
+
           <span className="photo-corner photo-corner-bl" />
+
           <span className="photo-corner photo-corner-br" />
 
 
@@ -240,10 +655,14 @@ function Identify() {
             <button
               type="button"
               className="demo-camera-button"
-              onClick={useDemoBottle}
+              onClick={
+                useDemoBottle
+              }
               aria-label="Try demo plastic bottle"
             >
-              <Camera size={21} />
+              <Camera
+                size={21}
+              />
             </button>
           )}
 
@@ -253,10 +672,14 @@ function Identify() {
               <button
                 type="button"
                 className="remove-photo-button"
-                onClick={removeImage}
+                onClick={
+                  removeImage
+                }
                 aria-label="Remove selected image"
               >
-                <X size={17} />
+                <X
+                  size={17}
+                />
               </button>
 
 
@@ -284,18 +707,24 @@ function Identify() {
               <div className="identify-action-heading">
 
                 <span>
-                  <ImageIcon size={18} />
+                  <ImageIcon
+                    size={18}
+                  />
                 </span>
 
+
                 <div>
+
                   <h2>
                     Show Climatica your item.
                   </h2>
+
 
                   <p>
                     Photograph one item clearly
                     with enough natural or indoor light.
                   </p>
+
                 </div>
 
               </div>
@@ -306,22 +735,36 @@ function Identify() {
                 <button
                   type="button"
                   className="identify-camera-action"
+                  disabled={
+                    processingImage
+                  }
                   onClick={() =>
-                    cameraInputRef.current?.click()
+                    cameraInputRef
+                      .current
+                      ?.click()
                   }
                 >
-                  <Camera size={17} />
+                  <Camera
+                    size={17}
+                  />
 
-                  Take a Photo
+                  {processingImage
+                    ? "Preparing..."
+                    : "Take a Photo"
+                  }
                 </button>
 
 
                 <input
-                  ref={cameraInputRef}
+                  ref={
+                    cameraInputRef
+                  }
                   type="file"
                   accept="image/*"
                   capture="environment"
-                  onChange={handleImageSelect}
+                  onChange={
+                    handleImageSelect
+                  }
                   hidden
                 />
 
@@ -329,21 +772,32 @@ function Identify() {
                 <button
                   type="button"
                   className="identify-upload-action"
+                  disabled={
+                    processingImage
+                  }
                   onClick={() =>
-                    uploadInputRef.current?.click()
+                    uploadInputRef
+                      .current
+                      ?.click()
                   }
                 >
-                  <Upload size={17} />
+                  <Upload
+                    size={17}
+                  />
 
                   Upload Image
                 </button>
 
 
                 <input
-                  ref={uploadInputRef}
+                  ref={
+                    uploadInputRef
+                  }
                   type="file"
                   accept="image/*"
-                  onChange={handleImageSelect}
+                  onChange={
+                    handleImageSelect
+                  }
                   hidden
                 />
 
@@ -354,8 +808,11 @@ function Identify() {
               <div className="identify-action-heading">
 
                 <span>
-                  <ScanLine size={18} />
+                  <ScanLine
+                    size={18}
+                  />
                 </span>
+
 
                 <div>
 
@@ -363,14 +820,16 @@ function Identify() {
                     Selected item
                   </small>
 
+
                   <h2>
                     Ready to identify it?
                   </h2>
 
+
                   <p>
-                    Climatica will prepare a sample
-                    identification and recommend
-                    appropriate next steps.
+                    Climatica will analyse the photo,
+                    identify the likely material and
+                    prepare appropriate next steps.
                   </p>
 
                 </div>
@@ -381,7 +840,9 @@ function Identify() {
               {fileName && (
                 <div className="identify-file-name">
 
-                  <ImageIcon size={14} />
+                  <ImageIcon
+                    size={14}
+                  />
 
                   <span>
                     {fileName}
@@ -394,9 +855,16 @@ function Identify() {
               <button
                 type="button"
                 className="identify-analyse-action"
-                onClick={analyseImage}
+                disabled={
+                  processingImage
+                }
+                onClick={
+                  analyseImage
+                }
               >
-                <ScanLine size={17} />
+                <ScanLine
+                  size={17}
+                />
 
                 Analyse Item
 
@@ -408,8 +876,6 @@ function Identify() {
           )}
 
 
-          {/* DIVIDER */}
-
           {!preview && (
             <>
               <div className="identify-v2-divider">
@@ -417,7 +883,10 @@ function Identify() {
                 <span />
 
                 <div>
-                  <Leaf size={12} />
+                  <Leaf
+                    size={12}
+                  />
+
                   or
                 </div>
 
@@ -433,14 +902,20 @@ function Identify() {
                 <div className="identify-manual-heading">
 
                   <div className="manual-v2-icon">
-                    <Search size={18} />
+
+                    <Search
+                      size={18}
+                    />
+
                   </div>
+
 
                   <div>
 
                     <h3>
                       Search manually
                     </h3>
+
 
                     <p>
                       Already know what the item is?
@@ -453,25 +928,41 @@ function Identify() {
 
                 <div className="identify-v2-search">
 
-                  <Search size={16} />
+                  <Search
+                    size={16}
+                  />
+
 
                   <input
                     type="text"
-                    value={searchValue}
-                    onChange={(event) =>
-                      setSearchValue(event.target.value)
+                    value={
+                      searchValue
                     }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        handleManualSearch();
+                    onChange={
+                      (event) =>
+                        setSearchValue(
+                          event.target.value
+                        )
+                    }
+                    onKeyDown={
+                      (event) => {
+                        if (
+                          event.key ===
+                          "Enter"
+                        ) {
+                          handleManualSearch();
+                        }
                       }
-                    }}
+                    }
                     placeholder="Search bottle, battery, laptop..."
                   />
 
+
                   <button
                     type="button"
-                    onClick={handleManualSearch}
+                    onClick={
+                      handleManualSearch
+                    }
                   >
                     Search
                   </button>
@@ -493,32 +984,47 @@ function Identify() {
                 <div>
 
                   <button
+                    type="button"
                     onClick={() =>
-                      analyseExample("Plastic bottle")
+                      analyseExample(
+                        "Plastic bottle"
+                      )
                     }
                   >
                     Plastic bottle
                   </button>
 
+
                   <button
+                    type="button"
                     onClick={() =>
-                      analyseExample("Battery")
+                      analyseExample(
+                        "Battery"
+                      )
                     }
                   >
                     Battery
                   </button>
 
+
                   <button
+                    type="button"
                     onClick={() =>
-                      analyseExample("Aluminium can")
+                      analyseExample(
+                        "Aluminium can"
+                      )
                     }
                   >
                     Aluminium can
                   </button>
 
+
                   <button
+                    type="button"
                     onClick={() =>
-                      analyseExample("Old laptop")
+                      analyseExample(
+                        "Old laptop"
+                      )
                     }
                   >
                     Old laptop
@@ -541,11 +1047,13 @@ function Identify() {
 
       <footer className="identify-v2-footer">
 
-        <Leaf size={13} />
+        <Leaf
+          size={13}
+        />
 
         <span>
-          Prototype mode — AI recognition
-          is simulated for this demo.
+          Demo mode — uploaded photos can now
+          be analysed using Climatica AI.
         </span>
 
       </footer>
