@@ -1,0 +1,622 @@
+/* =========================================================
+   CLIMATICA
+   RECYCLING DIRECTORY - PILOT VERSION
+
+   Scoped enhancements.
+   Original global styles.css remains intact.
+========================================================= */
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.recycling-live .recycling-hero-content > p {
+  font-size: 15px;
+  max-width: 690px;
+}
+
+.recycling-live .recycling-search-field input {
+  font-size: 15px;
+}
+
+.recycling-live .use-location-button {
+  font-size: 13px;
+}
+
+.recycling-live .location-message {
+  font-size: 12px;
+  max-width: 690px;
+  line-height: 1.5;
+}
+
+.recycling-live .recycling-hero {
+  min-height: 455px;
+}
+
+.recycling-live .recycling-hero-content {
+  padding-bottom: 48px;
+}
+
+.recycling-live .recycling-container {
+  max-width: 1320px;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.recycling-live-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 23px;
+}
+
+.recycling-live-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 19px 21px;
+
+  border: 1px solid #dae8df;
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.recycling-live-summary svg {
+  color: #078454;
+  flex: 0 0 auto;
+}
+
+.recycling-live-summary strong {
+  color: #0a6647;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.recycling-live-summary span {
+  color: #617568;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   AI MATERIAL MATCH
+========================================================= */
+
+.recycling-ai-match {
+  padding: 15px 17px;
+  margin-bottom: 20px;
+
+  display: flex;
+  gap: 14px;
+  align-items: center;
+
+  border: 1px solid #a8d5bb;
+  border-radius: 14px;
+  background: #edf9f1;
+}
+
+.recycling-ai-match > svg {
+  flex: 0 0 auto;
+  color: #097a51;
+}
+
+.recycling-ai-match > div {
+  flex: 1;
+}
+
+.recycling-ai-match strong {
+  color: #103c2a;
+  font-size: 15px;
+}
+
+.recycling-ai-match p {
+  margin: 4px 0 0;
+  color: #607b69;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recycling-ai-match button,
+.recycling-live-audience button {
+  border: 1px solid #accdb9;
+  background: #ffffff;
+  color: #0e6647;
+
+  border-radius: 10px;
+
+  min-height: 37px;
+  padding: 7px 12px;
+
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.recycling-live .recycling-filter-label {
+  font-size: 13px;
+}
+
+.recycling-live .material-filter-list button {
+  font-size: 12px;
+  min-height: 38px;
+}
+
+.recycling-live-filters {
+  gap: 16px;
+}
+
+.recycling-live-audience {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 11px;
+
+  margin: 0 0 19px;
+}
+
+.recycling-live-audience label {
+  color: #4c6757;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recycling-live-audience select {
+  background: #ffffff;
+  color: #193c29;
+
+  border: 1px solid #cbdcd0;
+  border-radius: 9px;
+
+  padding: 10px;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   DIRECTORY LAYOUT
+========================================================= */
+
+.recycling-live .recycling-locator {
+  grid-template-columns:
+    minmax(340px, 0.8fr)
+    minmax(440px, 1.2fr);
+}
+
+.recycling-live .recycling-location-list {
+  max-height: 800px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.recycling-live .location-panel-heading span {
+  font-size: 11px;
+}
+
+.recycling-live .location-count {
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   LOCATION CARDS
+========================================================= */
+
+.recycling-live .location-title-row h3 {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.recycling-live .location-title-row svg {
+  color: #688579;
+  flex: 0 0 auto;
+}
+
+.recycling-live .location-card-area {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.recycling-live .location-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 7px;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.recycling-live-research-tag {
+  padding: 2px 7px;
+  border-radius: 7px;
+  color: #8a5a1b;
+  background: #fff5df;
+  font-weight: 600;
+}
+
+.recycling-live .location-material-preview span {
+  font-size: 10px;
+  padding: 5px 7px;
+}
+
+.recycling-live-selected {
+  color: #0b9360;
+  align-self: center;
+}
+
+
+/* =========================================================
+   DETAILS / MAP PLACEHOLDER
+========================================================= */
+
+.recycling-live .recycling-map-panel {
+  grid-template-rows: auto 1fr;
+}
+
+.recycling-live-map-placeholder {
+  position: relative;
+
+  display: grid;
+  min-height: 250px;
+  place-items: center;
+
+  padding: 25px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 72% 18%,
+      #dcefe1 0,
+      #edf5ee 30%,
+      #e2eee6 74%
+    );
+}
+
+.recycling-live-map-lines {
+  pointer-events: none;
+
+  position: absolute;
+  inset: -100px;
+  opacity: 0.45;
+
+  background:
+    repeating-linear-gradient(
+      35deg,
+      transparent 0 80px,
+      #ffffff 81px 93px,
+      transparent 95px 158px
+    ),
+    repeating-linear-gradient(
+      117deg,
+      transparent 0 110px,
+      #ffffff 111px 122px,
+      transparent 124px 200px
+    );
+}
+
+.recycling-live-map-message {
+  position: relative;
+
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 9px;
+
+  padding: 24px;
+  min-width: min(350px, 100%);
+
+  border: 1px solid #d6e8dc;
+  border-radius: 16px;
+  background: #ffffffed;
+
+  box-shadow:
+    0 14px 35px #173b1e15;
+}
+
+.recycling-live-map-message > svg {
+  color: #098350;
+}
+
+.recycling-live-map-message strong {
+  font-size: 21px;
+  color: #173927;
+}
+
+.recycling-live-map-message span {
+  font-size: 13px;
+  color: #6e8374;
+}
+
+.recycling-live-map-message a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+
+  color: #066f49;
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOCATION DETAILS
+========================================================= */
+
+.recycling-live .selected-location-label {
+  font-size: 10px;
+}
+
+.recycling-live .selected-location-top h3 {
+  font-size: 22px;
+}
+
+.recycling-live-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+
+  color: #82530e;
+  background: #fff4d9;
+
+  border-radius: 9px;
+  padding: 8px 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.recycling-live .selected-location-meta {
+  gap: 9px;
+  display: grid;
+
+  color: #576d5d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recycling-live .selected-location-meta span {
+  align-items: flex-start;
+}
+
+.recycling-live .selected-location-meta svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.recycling-live .selected-location-detail > p {
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.recycling-live .accepted-materials > span {
+  font-size: 11px;
+}
+
+.recycling-live .accepted-materials > div span {
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   RESEARCH CONTEXT
+========================================================= */
+
+.recycling-live-context {
+  display: grid;
+  gap: 7px;
+
+  margin-top: 16px;
+
+  color: #566b5e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recycling-live-context strong {
+  color: #1b3a28;
+}
+
+.recycling-live-context small {
+  font-size: 11px;
+  color: #738778;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.recycling-live .selected-location-actions a {
+  text-decoration: none;
+  font-size: 13px;
+  min-height: 46px;
+}
+
+.recycling-live .selected-location-actions {
+  flex-wrap: wrap;
+}
+
+.recycling-live-no-phone {
+  font-size: 12px;
+  color: #697d70;
+  align-self: center;
+}
+
+
+/* =========================================================
+   WARNING
+========================================================= */
+
+.recycling-live-warning {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+
+  margin-top: 15px;
+  padding: 12px;
+
+  border-radius: 10px;
+
+  color: #7d561b;
+  background: #fff5e4;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.recycling-live-warning svg {
+  flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   NOTES
+========================================================= */
+
+.recycling-live .recycling-prototype-note {
+  max-width: 100%;
+}
+
+.recycling-live .recycling-prototype-note strong {
+  font-size: 13px;
+}
+
+.recycling-live .recycling-prototype-note p {
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+.recycling-live-empty-panel {
+  padding: 60px 25px;
+
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+
+  color: #506b5c;
+  text-align: center;
+}
+
+.recycling-live-empty-panel h3 {
+  font-size: 18px;
+}
+
+.recycling-live-empty-panel p {
+  font-size: 13px;
+}
+
+.recycling-live .no-locations button {
+  margin-top: 15px;
+  padding: 9px 14px;
+
+  border-radius: 9px;
+  border: 1px solid #a5cab7;
+
+  background: #ffffff;
+  color: #096946;
+
+  cursor: pointer;
+}
+
+.recycling-live .no-locations h3 {
+  font-size: 17px;
+}
+
+.recycling-live .no-locations p {
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 960px) {
+  .recycling-live .recycling-locator {
+    grid-template-columns: 1fr;
+  }
+
+  .recycling-live .recycling-location-list {
+    max-height: 530px;
+  }
+
+  .recycling-live-summary > div {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .recycling-live .recycling-hero {
+    min-height: 490px;
+  }
+
+  .recycling-live-summary {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .recycling-live-summary > div {
+    padding: 13px 16px;
+  }
+
+  .recycling-ai-match {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .recycling-live .selected-location-top {
+    flex-direction: column;
+  }
+
+  .recycling-live .recycling-location-list {
+    max-height: 490px;
+  }
+
+  .recycling-live .recycling-hero-content > p {
+    font-size: 13px;
+  }
+
+  .recycling-live .recycling-back {
+    font-size: 12px;
+  }
+
+  .recycling-live .selected-location-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .recycling-live .recycling-location-card {
+    transition: none;
+  }
+}
