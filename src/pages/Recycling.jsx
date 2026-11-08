@@ -1,3 +1,7 @@
+
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -18,153 +22,140 @@ import {
   X,
 } from "lucide-react";
 
-import {
-  Link,
-} from "react-router-dom";
-
-import {
-  useMemo,
-  useState,
-} from "react";
-
-import climaticaLogo
-  from "../assets/climatica-logo.png";
-
-import recyclingBackground
-  from "../assets/cta-leaf-bg.png";
+import climaticaLogo from "../assets/climatica-logo.png";
+import recyclingBackground from "../assets/cta-leaf-bg.png";
 
 import {
   additionalResearchLeads,
+  canSearchMaps,
+  getServiceGroup,
   mapsSearchUrl,
   materialFilters,
   recyclingLocations,
+  regionFilters,
+  serviceFilters,
   suggestedMaterialFromAi,
-} from "../data/recyclingLocations";
+} from "../data/recyclingDirectory";
 
 import "./Recycling.live.css";
 
-
 /* =========================================================
-   SEARCH NORMALIZATION
+   HELPERS
 ========================================================= */
 
-const normalize = (text) =>
-  String(text || "")
-    .trim()
-    .toLowerCase();
-
+const normalize = (value) =>
+  String(value ?? "").trim().toLowerCase();
 
 /* =========================================================
    RECYCLING PAGE
 ========================================================= */
 
 function Recycling() {
-  const initialMaterial =
-    suggestedMaterialFromAi();
+  const [initialMaterial] = useState(
+    () => suggestedMaterialFromAi()
+  );
 
-  const [
-    filter,
-    setFilter,
-  ] = useState(
+  const [filter, setFilter] = useState(
     initialMaterial || "All"
   );
 
-  const [
-    search,
-    setSearch,
-  ] = useState("");
+  const [search, setSearch] = useState("");
 
-  const [
-    audience,
-    setAudience,
-  ] = useState("All types");
+  // Existing organisation-type filter.
+  const [audience, setAudience] = useState("All types");
 
-  const [
-    selectedId,
-    setSelectedId,
-  ] = useState(
-    recyclingLocations[0]?.id ??
-      null
+  // New filters.
+  const [region, setRegion] = useState("All areas");
+  const [service, setService] = useState("All services");
+
+  // Existing selection behaviour.
+  const [selectedId, setSelectedId] = useState(
+    recyclingLocations[0]?.id ?? null
   );
 
-  const [
-    locationMessage,
-    setLocationMessage,
-  ] = useState("");
-
+  // Existing location-permission feedback.
+  const [locationMessage, setLocationMessage] = useState("");
 
   /* =======================================================
      FILTER LOCATIONS
   ======================================================= */
 
-  const filteredLocations =
-    useMemo(() => {
-      return recyclingLocations.filter(
-        (item) => {
-          const term =
-            normalize(search);
+  const filteredLocations = useMemo(() => {
+    return recyclingLocations.filter((item) => {
+      const term = normalize(search);
 
-          const matchesSearch =
-            !term ||
-            [
-              item.name,
-              item.area,
-              item.address,
-              item.type,
-              ...item.materials,
-            ].some((value) =>
-              normalize(value).includes(
-                term
-              )
-            );
+      const searchableFields = [
+        item.name,
+        item.area,
+        item.address,
+        item.region,
+        item.type,
+        item.notes,
+        item.source,
+        ...(item.materials ?? []),
+      ];
 
-          const matchesMaterial =
-            filter === "All" ||
-            item.materials.includes(
-              filter
-            );
+      const matchesSearch =
+        !term ||
+        searchableFields.some((value) =>
+          normalize(value).includes(term)
+        );
 
-          const matchesAudience =
-            audience === "All types" ||
-            (
-              audience ===
-                "Household / unknown" &&
-              item.audience !==
-                "commercial"
-            ) ||
-            (
-              audience ===
-                "Commercial" &&
-              item.audience ===
-                "commercial"
-            );
+      const matchesMaterial =
+        filter === "All" ||
+        (item.materials ?? []).includes(filter);
 
-          return (
-            matchesSearch &&
-            matchesMaterial &&
-            matchesAudience
-          );
-        }
+      // Preserve existing audience filtering.
+      // "Household / unknown" does not mean access is verified.
+      const matchesAudience =
+        audience === "All types" ||
+        (audience === "Household / unknown" &&
+          item.audience !== "commercial") ||
+        (audience === "Commercial" &&
+          item.audience === "commercial");
+
+      // New region filtering.
+      const matchesRegion =
+        region === "All areas" ||
+        item.region === region;
+
+      // New service-type filtering.
+      const matchesService =
+        service === "All services" ||
+        getServiceGroup(item) === service;
+
+      return (
+        matchesSearch &&
+        matchesMaterial &&
+        matchesAudience &&
+        matchesRegion &&
+        matchesService
       );
-    }, [
-      search,
-      filter,
-      audience,
-    ]);
-
+    });
+  }, [
+    search,
+    filter,
+    audience,
+    region,
+    service,
+  ]);
 
   /* =======================================================
      SELECTED LOCATION
+
+     Preserve existing fallback when filters change.
   ======================================================= */
 
   const selected =
     filteredLocations.find(
-      (item) =>
-        item.id === selectedId
+      (item) => item.id === selectedId
     ) ??
     filteredLocations[0] ??
     null;
 
+  const verifiedCount = recyclingLocations.filter(
+    (item) => item.status === "verified"
+  ).length;
 
   /* =======================================================
      RESET FILTERS
@@ -172,50 +163,42 @@ function Recycling() {
 
   const clearFilters = () => {
     setSearch("");
-
     setFilter("All");
-
     setAudience("All types");
+    setRegion("All areas");
+    setService("All services");
   };
 
-
   /* =======================================================
-     LOCATION PERMISSION
+     USE MY LOCATION
 
-     Actual distance calculations are disabled
-     until verified GPS coordinates are available.
+     Preserved from the existing page.
+
+     This only requests browser location permission.
+     It does NOT calculate distance or verify map pins.
   ======================================================= */
 
   const useMyLocation = () => {
-    if (
-      !(
-        "geolocation" in navigator
-      )
-    ) {
+    if (!("geolocation" in navigator)) {
       setLocationMessage(
         "Geolocation is unavailable. You can browse the Ogun State research directory manually."
       );
-
       return;
     }
 
-    setLocationMessage(
-      "Requesting location permission…"
-    );
+    setLocationMessage("Requesting location permission…");
 
     navigator.geolocation.getCurrentPosition(
       () => {
         setLocationMessage(
-          "Location permission granted. Accurate distance sorting will be enabled after collection-point coordinates are verified."
+          "Location permission granted. Accurate distance sorting is not available yet because the collection-point coordinates still require verification."
         );
       },
-
       () => {
         setLocationMessage(
-          "Location not shared. You can still search the Ogun State directory."
+          "Location not shared. You can still browse and search the directory."
         );
       },
-
       {
         enableHighAccuracy: false,
         timeout: 10000,
@@ -224,33 +207,26 @@ function Recycling() {
     );
   };
 
-
   /* =======================================================
-     PAGE RENDER
+     RENDER
   ======================================================= */
 
   return (
     <main className="recycling-page recycling-live">
 
-      {/* =====================================
-          HERO
-      ====================================== */}
+      {/* ===================================================
+          HERO — ORIGINAL DESIGN
+      =================================================== */}
 
       <section
         className="recycling-hero"
         style={{
-          backgroundImage:
-            `url(${recyclingBackground})`,
+          backgroundImage: `url(${recyclingBackground})`,
         }}
       >
-
         <div className="recycling-hero-overlay" />
 
-
-        {/* NAVBAR */}
-
         <header className="recycling-navbar">
-
           <Link
             to="/"
             className="recycling-logo"
@@ -261,31 +237,20 @@ function Recycling() {
             />
           </Link>
 
-
           <Link
             to="/options"
             className="recycling-back"
           >
             <ArrowLeft size={15} />
-
             Back to options
           </Link>
-
         </header>
 
-
-        {/* HERO CONTENT */}
-
         <div className="recycling-hero-content">
-
           <div className="recycling-eyebrow">
-
             <MapPin size={14} />
-
             Ogun State · Pilot directory
-
           </div>
-
 
           <h1>
             Find a recycling
@@ -293,52 +258,41 @@ function Recycling() {
             option for your waste.
           </h1>
 
-
           <p>
-            Explore researched recycling and
-            collection leads across Ota,
-            Sango-Ota, Adalemo and Ijoko.
-            Contact each organisation before
-            visiting.
+            Explore recycling and collection research across
+            Ota, Sango-Ota, Abeokuta North, Obafemi Owode
+            and Odeda. Check the verification status and
+            contact organisations before visiting.
           </p>
 
-
-          {/* SEARCH */}
+          {/* ORIGINAL SEARCH FIELD */}
 
           <div className="recycling-search-shell">
-
             <div className="recycling-search-field">
-
               <Search size={18} />
-
 
               <input
                 aria-label="Search recycling places, areas or materials"
-                placeholder="Search PET, Ota, cardboard, e-waste…"
+                placeholder="Search PET, Mowe, Saje, paper, e-waste..."
                 value={search}
                 onChange={(event) =>
-                  setSearch(
-                    event.target.value
-                  )
+                  setSearch(event.target.value)
                 }
               />
-
 
               {search && (
                 <button
                   type="button"
                   className="clear-recycling-search"
-                  onClick={() =>
-                    setSearch("")
-                  }
+                  onClick={() => setSearch("")}
                   aria-label="Clear search"
                 >
                   <X size={16} />
                 </button>
               )}
-
             </div>
 
+            {/* ORIGINAL LOCATION BUTTON */}
 
             <button
               type="button"
@@ -346,47 +300,36 @@ function Recycling() {
               onClick={useMyLocation}
             >
               <LocateFixed size={17} />
-
               Use my location
             </button>
-
           </div>
 
-
           {locationMessage && (
-            <div className="location-message">
-
+            <div
+              className="location-message"
+              role="status"
+            >
               <LocateFixed size={15} />
-
               {locationMessage}
-
             </div>
           )}
-
         </div>
-
       </section>
 
-
-      {/* =====================================
-          MAIN CONTENT
-      ====================================== */}
+      {/* ===================================================
+          DIRECTORY CONTENT
+      =================================================== */}
 
       <section className="recycling-content">
-
         <div className="recycling-container">
 
-          {/* =================================
-              SUMMARY
-          ================================== */}
+          {/* ORIGINAL SUMMARY DESIGN */}
 
           <div
             className="recycling-live-summary"
             role="status"
           >
-
             <div>
-
               <Building2 size={21} />
 
               <strong>
@@ -394,162 +337,150 @@ function Recycling() {
               </strong>
 
               <span>
-                Research leads imported
+                Research records imported
               </span>
-
             </div>
 
-
             <div>
-
               <FileCheck2 size={21} />
 
               <strong>
-                0
+                {verifiedCount}
               </strong>
 
               <span>
-                Field-verified so far
+                Independently verified
               </span>
-
             </div>
 
-
             <div>
-
               <Leaf size={21} />
 
-              <strong>
-                Ogun
-              </strong>
+              <strong>Ogun</strong>
 
               <span>
                 Initial coverage area
               </span>
-
             </div>
-
           </div>
 
-
-          {/* =================================
-              AI MATCH
-          ================================== */}
+          {/* ORIGINAL GEMINI AI MATCH */}
 
           {initialMaterial && (
             <div className="recycling-ai-match">
-
               <Recycle size={19} />
 
-
               <div>
-
                 <strong>
-                  Matched from your latest
-                  AI scan: {initialMaterial}
+                  Matched from your latest AI scan:{" "}
+                  {initialMaterial}
                 </strong>
 
-
                 <p>
-                  Climatica is filtering by
-                  the material Gemini
-                  identified. These businesses
-                  are unverified research leads,
-                  not confirmed drop-off points.
+                  Climatica has selected the material
+                  Gemini identified. The directory displays
+                  matching research entries, not independently
+                  verified public recycling centres.
                 </p>
-
               </div>
-
 
               <button
                 type="button"
-                onClick={() =>
-                  setFilter("All")
-                }
+                onClick={() => setFilter("All")}
               >
                 Show all
               </button>
-
             </div>
           )}
 
-
-          {/* =================================
-              MATERIAL FILTERS
-          ================================== */}
+          {/* ORIGINAL MATERIAL FILTERS */}
 
           <div className="recycling-filter-row recycling-live-filters">
-
             <div className="recycling-filter-label">
-
               <SlidersHorizontal size={16} />
-
               Material
-
             </div>
-
 
             <div className="material-filter-list">
-
-              {materialFilters.map(
-                (value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={
-                      filter === value
-                        ? "active"
-                        : ""
-                    }
-                    onClick={() =>
-                      setFilter(value)
-                    }
-                  >
-                    {value}
-                  </button>
-                )
-              )}
-
+              {materialFilters.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={
+                    filter === value ? "active" : ""
+                  }
+                  aria-pressed={filter === value}
+                  onClick={() => setFilter(value)}
+                >
+                  {value}
+                </button>
+              ))}
             </div>
-
           </div>
 
-
-          {/* =================================
-              AUDIENCE FILTER
-          ================================== */}
+          {/* ORIGINAL AUDIENCE FILTER
+              + NEW AREA AND SERVICE FILTERS */}
 
           <div className="recycling-live-audience">
-
             <label htmlFor="recycling-audience">
               Organisation type
             </label>
-
 
             <select
               id="recycling-audience"
               value={audience}
               onChange={(event) =>
-                setAudience(
-                  event.target.value
-                )
+                setAudience(event.target.value)
               }
             >
-
-              <option>
+              <option value="All types">
                 All types
               </option>
 
-              <option>
+              <option value="Household / unknown">
                 Household / unknown
               </option>
 
-              <option>
+              <option value="Commercial">
                 Commercial
               </option>
-
             </select>
 
+            <label htmlFor="recycling-region">
+              Area
+            </label>
+
+            <select
+              id="recycling-region"
+              value={region}
+              onChange={(event) =>
+                setRegion(event.target.value)
+              }
+            >
+              {regionFilters.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="recycling-service">
+              Service
+            </label>
+
+            <select
+              id="recycling-service"
+              value={service}
+              onChange={(event) =>
+                setService(event.target.value)
+              }
+            >
+              {serviceFilters.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
 
             <button
               type="button"
@@ -557,80 +488,59 @@ function Recycling() {
             >
               Reset filters
             </button>
-
           </div>
 
-
-          {/* =================================
-              DIRECTORY + DETAILS
-          ================================== */}
+          {/* =================================================
+              LOCATION LIST + DETAILS
+          ================================================= */}
 
           <div className="recycling-locator">
 
-            {/* LOCATION LIST */}
+            {/* ORIGINAL LIST PANEL */}
 
             <div className="recycling-location-panel">
-
               <div className="location-panel-heading">
-
                 <div>
-
                   <span>
                     Ogun State research directory
                   </span>
 
-
                   <h2>
                     Collection leads
                   </h2>
-
                 </div>
-
 
                 <div className="location-count">
                   {filteredLocations.length}
                 </div>
-
               </div>
 
-
               <div className="recycling-location-list">
-
                 {filteredLocations.length ? (
-                  filteredLocations.map(
-                    (item) => (
-                      <LocationCard
-                        key={item.id}
-                        item={item}
-                        active={
-                          item.id ===
-                          selected?.id
-                        }
-                        onSelect={() =>
-                          setSelectedId(
-                            item.id
-                          )
-                        }
-                      />
-                    )
-                  )
+                  filteredLocations.map((item) => (
+                    <LocationCard
+                      key={item.id}
+                      item={item}
+                      active={
+                        item.id === selected?.id
+                      }
+                      onSelect={() =>
+                        setSelectedId(item.id)
+                      }
+                    />
+                  ))
                 ) : (
-
                   <div className="no-locations">
-
                     <Search size={27} />
-
 
                     <h3>
                       No matching entries
                     </h3>
 
-
                     <p>
-                      Try a different material
-                      or search term.
+                      Try another material, organisation,
+                      service or area.
                     </p>
-
 
                     <button
                       type="button"
@@ -638,356 +548,71 @@ function Recycling() {
                     >
                       Clear filters
                     </button>
-
                   </div>
                 )}
-
               </div>
-
             </div>
 
-
-            {/* =================================
-                LOCATION DETAILS
-            ================================== */}
+            {/* ORIGINAL DETAILS PANEL */}
 
             <div className="recycling-map-panel recycling-live-detail-panel">
-
               {selected ? (
-                <>
-
-                  {/* MAP SEARCH AREA */}
-
-                  <div className="recycling-live-map-placeholder">
-
-                    <div
-                      className="recycling-live-map-lines"
-                      aria-hidden="true"
-                    />
-
-
-                    <div className="recycling-live-map-message">
-
-                      <MapPin size={30} />
-
-
-                      <strong>
-                        {selected.area}
-                      </strong>
-
-
-                      <span>
-                        Exact map pin pending
-                        verification
-                      </span>
-
-
-                      <a
-                        href={
-                          mapsSearchUrl(
-                            selected
-                          )
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Search this location on
-                        Google Maps
-
-                        <ArrowUpRight
-                          size={15}
-                        />
-                      </a>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* LOCATION INFORMATION */}
-
-                  <div className="selected-location-detail">
-
-                    <div className="selected-location-top">
-
-                      <div>
-
-                        <span className="selected-location-label">
-
-                          Selected research entry ·{" "}
-                          {selected.id}
-
-                        </span>
-
-
-                        <h3>
-                          {selected.name}
-                        </h3>
-
-                      </div>
-
-
-                      <span className="recycling-live-status">
-
-                        <ShieldAlert
-                          size={14}
-                        />
-
-                        Not yet field-verified
-
-                      </span>
-
-                    </div>
-
-
-                    {/* ADDRESS AND HOURS */}
-
-                    <div className="selected-location-meta">
-
-                      <span>
-
-                        <MapPin size={15} />
-
-                        {selected.address}
-
-                      </span>
-
-
-                      <span>
-
-                        <Clock3 size={15} />
-
-                        {selected.hours ??
-                          "Opening hours not supplied"}
-
-                      </span>
-
-                    </div>
-
-
-                    {/* NOTES */}
-
-                    <p>
-                      {selected.notes}
-                    </p>
-
-
-                    {/* ACCEPTED MATERIALS */}
-
-                    <div className="accepted-materials">
-
-                      <span>
-                        Materials listed in research
-                        — please confirm
-                      </span>
-
-
-                      <div>
-
-                        {selected.materials.map(
-                          (material) => (
-                            <span key={material}>
-                              {material}
-                            </span>
-                          )
-                        )}
-
-                      </div>
-
-                    </div>
-
-
-                    {/* =================================
-                        RESEARCH INFORMATION
-                    ================================== */}
-
-                    <div className="recycling-live-context">
-
-                      <strong>
-                        {selected.type}
-                      </strong>
-
-
-                      <span>
-
-                        {selected.audience ===
-                        "commercial"
-                          ? "Research indicates commercial / industrial focus; individual drop-off not confirmed."
-                          : "Public and school drop-off eligibility not yet confirmed."}
-
-                      </span>
-
-
-                      <small>
-
-                        Source: Climatica team
-                        collection-point research,
-                        page {selected.sourcePage}.
-                        Verification date:
-                        not provided.
-
-                      </small>
-
-                    </div>
-
-
-                    {/* =================================
-                        ACTION BUTTONS
-                    ================================== */}
-
-                    <div className="selected-location-actions">
-
-                      <a
-                        className="directions-button"
-                        href={
-                          mapsSearchUrl(
-                            selected
-                          )
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-
-                        <Navigation
-                          size={16}
-                        />
-
-                        Find on Maps
-
-                        <ArrowUpRight
-                          size={15}
-                        />
-
-                      </a>
-
-
-                      {selected.phones.length ? (
-                        <a
-                          className="location-details-button"
-                          href={
-                            `tel:${selected.phones[0]}`
-                          }
-                        >
-
-                          <Phone
-                            size={16}
-                          />
-
-                          Call to verify
-
-                        </a>
-                      ) : (
-                        <span className="recycling-live-no-phone">
-
-                          Phone not available
-                          in research
-
-                        </span>
-                      )}
-
-                    </div>
-
-
-                    {/* WARNING */}
-
-                    <div className="recycling-live-warning">
-
-                      <ShieldAlert
-                        size={16}
-                      />
-
-
-                      <span>
-                        Climatica has not confirmed
-                        that this site is operating,
-                        accepts the listed materials,
-                        or welcomes walk-in users.
-                        Please contact the
-                        organisation first.
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </>
+                <LocationDetails location={selected} />
               ) : (
-
                 <div className="recycling-live-empty-panel">
-
                   <Recycle size={28} />
-
 
                   <h3>
                     No selected location
                   </h3>
 
-
                   <p>
                     Change the filters to see
                     available research entries.
                   </p>
-
                 </div>
               )}
-
             </div>
-
           </div>
 
-
-          {/* =================================
-              RESEARCH NOTICE
-          ================================== */}
+          {/* ORIGINAL RESEARCH WARNING */}
 
           <div className="recycling-prototype-note">
-
-            <ShieldAlert
-              size={18}
-            />
-
+            <ShieldAlert size={18} />
 
             <div>
-
               <strong>
-                Research preview — not a
-                verified public recycling
-                directory yet
+                Research preview — not a verified
+                public recycling directory yet
               </strong>
 
-
               <p>
-                We replaced four fictional
-                demonstration locations with{" "}
-                {recyclingLocations.length}{" "}
-                team-researched entries.
-                No coordinates or distances
-                have been invented. Call
-                and confirm materials,
-                public access, fees/weights
-                and opening hours before
-                visiting. A separate follow-up
-                list includes{" "}
-                {additionalResearchLeads.length}{" "}
-                additional initiatives with
-                insufficient address details.
+                The directory currently contains{" "}
+                {recyclingLocations.length} research records.
+                Some are processing plants, government
+                authorities, pickup networks, partner leads
+                or informal markets rather than public
+                drop-off centres. Verify operating status,
+                materials, access, minimum quantities
+                and hours before visiting.
               </p>
 
+              <p>
+                No GPS distances have been invented.
+                A separate research list also contains{" "}
+                {additionalResearchLeads.length} initiatives
+                requiring more specific location information.
+              </p>
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
 
-
 /* =========================================================
-   LOCATION CARD
+   ORIGINAL LOCATION CARD
 ========================================================= */
 
 function LocationCard({
@@ -999,76 +624,49 @@ function LocationCard({
     <button
       type="button"
       onClick={onSelect}
-      className={
-        `recycling-location-card ${
-          active ? "active" : ""
-        }`
-      }
+      className={`recycling-location-card ${
+        active ? "active" : ""
+      }`}
       aria-pressed={active}
     >
-
       <div className="location-card-icon">
-
         <Recycle size={20} />
-
       </div>
 
-
       <div className="location-card-copy">
-
         <div className="location-title-row">
-
           <h3>
             {item.name}
           </h3>
 
-
-          <ChevronRight
-            size={14}
-          />
-
+          <ChevronRight size={14} />
         </div>
-
 
         <div className="location-card-area">
-
-          <MapPin
-            size={14}
-          />
-
+          <MapPin size={14} />
           {item.area}
-
         </div>
 
-
         <div className="location-card-meta">
-
           <span>
             {item.type}
           </span>
 
-
           <span className="recycling-live-research-tag">
             Research lead
           </span>
-
         </div>
 
-
         <div className="location-material-preview">
-
-          {item.materials
+          {(item.materials ?? [])
             .slice(0, 4)
             .map((material) => (
               <span key={material}>
                 {material}
               </span>
             ))}
-
         </div>
-
       </div>
-
 
       {active && (
         <CheckCircle2
@@ -1076,10 +674,211 @@ function LocationCard({
           size={16}
         />
       )}
-
     </button>
   );
 }
 
+/* =========================================================
+   LOCATION DETAILS
+
+   Preserves the old visual structure and actions.
+========================================================= */
+
+function LocationDetails({ location }) {
+  const hasMapSearch = canSearchMaps(location);
+  const hasPhone = (location.phones ?? []).length > 0;
+
+  return (
+    <>
+      {/* ORIGINAL MAP PLACEHOLDER */}
+
+      <div className="recycling-live-map-placeholder">
+        <div
+          className="recycling-live-map-lines"
+          aria-hidden="true"
+        />
+
+        <div className="recycling-live-map-message">
+          <MapPin size={30} />
+
+          <strong>
+            {location.area}
+          </strong>
+
+          <span>
+            {hasMapSearch
+              ? "Exact map pin pending verification"
+              : "No fixed public drop-off location supplied"}
+          </span>
+
+          {hasMapSearch && (
+            <a
+              href={mapsSearchUrl(location)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Search this location on Google Maps
+
+              <ArrowUpRight size={15} />
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* ORIGINAL LOCATION INFORMATION */}
+
+      <div className="selected-location-detail">
+        <div className="selected-location-top">
+          <div>
+            <span className="selected-location-label">
+              Selected research entry · {location.id}
+            </span>
+
+            <h3>
+              {location.name}
+            </h3>
+          </div>
+
+          <span className="recycling-live-status">
+            <ShieldAlert size={14} />
+
+            {location.status === "verified"
+              ? "Verified"
+              : "Not yet field-verified"}
+          </span>
+        </div>
+
+        {/* ADDRESS AND HOURS */}
+
+        <div className="selected-location-meta">
+          <span>
+            <MapPin size={15} />
+            {location.address}
+          </span>
+
+          <span>
+            <Clock3 size={15} />
+
+            {location.hours ??
+              "Opening hours not supplied"}
+          </span>
+        </div>
+
+        {/* ORIGINAL NOTES */}
+
+        <p>
+          {location.notes}
+        </p>
+
+        {/* ACCEPTED MATERIALS */}
+
+        <div className="accepted-materials">
+          <span>
+            Materials listed in research —
+            please confirm
+          </span>
+
+          <div>
+            {(location.materials ?? []).length > 0 ? (
+              location.materials.map((material) => (
+                <span key={material}>
+                  {material}
+                </span>
+              ))
+            ) : (
+              <span>
+                Materials not confirmed
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* RESEARCH INFORMATION */}
+
+        <div className="recycling-live-context">
+          <strong>
+            {location.type}
+          </strong>
+
+          <span>
+            {location.audience === "commercial"
+              ? "Research indicates commercial / industrial focus; individual drop-off is not confirmed."
+              : "Public and school drop-off eligibility has not been independently confirmed."}
+          </span>
+
+          <span>
+            Research area: {location.region}
+          </span>
+
+          <span>
+            Service category: {getServiceGroup(location)}
+          </span>
+
+          <small>
+            Source: {location.source ?? "Team research"}
+            {location.sourcePage
+              ? `, page ${location.sourcePage}`
+              : ""}
+            . Verification date:{" "}
+            {location.lastVerifiedAt ?? "not provided"}.
+          </small>
+        </div>
+
+        {/* ORIGINAL ACTION BUTTONS */}
+
+        <div className="selected-location-actions">
+          {hasMapSearch ? (
+            <a
+              className="directions-button"
+              href={mapsSearchUrl(location)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Navigation size={16} />
+
+              Find on Maps
+
+              <ArrowUpRight size={15} />
+            </a>
+          ) : (
+            <span className="recycling-live-no-phone">
+              Physical drop-off address unavailable
+            </span>
+          )}
+
+          {hasPhone ? (
+            <a
+              className="location-details-button"
+              href={`tel:${location.phones[0]}`}
+            >
+              <Phone size={16} />
+
+              Call to verify
+            </a>
+          ) : (
+            <span className="recycling-live-no-phone">
+              Phone not available in research
+            </span>
+          )}
+        </div>
+
+        {/* ORIGINAL WARNING */}
+
+        <div className="recycling-live-warning">
+          <ShieldAlert size={16} />
+
+          <span>
+            Climatica has not independently confirmed that
+            this organisation currently operates, accepts
+            the reported materials or welcomes public
+            drop-offs. Some entries are pickup services,
+            partner leads or industrial facilities.
+            Contact the organisation before taking action.
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default Recycling;
