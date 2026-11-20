@@ -1,4 +1,5 @@
 
+
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -30,6 +31,7 @@ import {
   canSearchMaps,
   getServiceGroup,
   mapsSearchUrl,
+  matchesResearchArea,
   materialFilters,
   recyclingLocations,
   regionFilters,
@@ -64,20 +66,30 @@ function Recycling() {
   // Existing organisation-type filter.
   const [audience, setAudience] = useState("All types");
 
-  // New filters.
+  // Research-area and service-type filters.
   const [region, setRegion] = useState("All areas");
   const [service, setService] = useState("All services");
 
-  // Existing selection behaviour.
+  // Preserve existing selected-location behaviour.
   const [selectedId, setSelectedId] = useState(
     recyclingLocations[0]?.id ?? null
   );
 
-  // Existing location-permission feedback.
+  // Preserve existing location-permission feedback.
   const [locationMessage, setLocationMessage] = useState("");
 
   /* =======================================================
      FILTER LOCATIONS
+
+     Includes:
+     - Text search
+     - Material matching
+     - Organisation audience
+     - Research-area matching
+     - Service-category filtering
+
+     A research-area match DOES NOT imply that
+     the facility is physically located there.
   ======================================================= */
 
   const filteredLocations = useMemo(() => {
@@ -89,10 +101,12 @@ function Recycling() {
         item.area,
         item.address,
         item.region,
+        item.state,
         item.type,
         item.notes,
         item.source,
         ...(item.materials ?? []),
+        ...(item.researchAreas ?? []),
       ];
 
       const matchesSearch =
@@ -105,8 +119,8 @@ function Recycling() {
         filter === "All" ||
         (item.materials ?? []).includes(filter);
 
-      // Preserve existing audience filtering.
-      // "Household / unknown" does not mean access is verified.
+      // Preserve existing organisation filtering.
+      // Unknown audience is NOT verified public access.
       const matchesAudience =
         audience === "All types" ||
         (audience === "Household / unknown" &&
@@ -114,12 +128,13 @@ function Recycling() {
         (audience === "Commercial" &&
           item.audience === "commercial");
 
-      // New region filtering.
-      const matchesRegion =
-        region === "All areas" ||
-        item.region === region;
+      // New: match a primary area OR a research reference.
+      // Research references do not prove local service.
+      const matchesRegion = matchesResearchArea(
+        item,
+        region
+      );
 
-      // New service-type filtering.
       const matchesService =
         service === "All services" ||
         getServiceGroup(item) === service;
@@ -143,7 +158,7 @@ function Recycling() {
   /* =======================================================
      SELECTED LOCATION
 
-     Preserve existing fallback when filters change.
+     Preserve fallback when filters change.
   ======================================================= */
 
   const selected =
@@ -172,10 +187,11 @@ function Recycling() {
   /* =======================================================
      USE MY LOCATION
 
-     Preserved from the existing page.
+     Preserved from the original page.
 
-     This only requests browser location permission.
-     It does NOT calculate distance or verify map pins.
+     Currently requests location permission only.
+     Accurate distance calculations will require
+     independently verified facility coordinates.
   ======================================================= */
 
   const useMyLocation = () => {
@@ -183,6 +199,7 @@ function Recycling() {
       setLocationMessage(
         "Geolocation is unavailable. You can browse the Ogun State research directory manually."
       );
+
       return;
     }
 
@@ -194,11 +211,13 @@ function Recycling() {
           "Location permission granted. Accurate distance sorting is not available yet because the collection-point coordinates still require verification."
         );
       },
+
       () => {
         setLocationMessage(
           "Location not shared. You can still browse and search the directory."
         );
       },
+
       {
         enableHighAccuracy: false,
         timeout: 10000,
@@ -208,7 +227,7 @@ function Recycling() {
   };
 
   /* =======================================================
-     RENDER
+     PAGE RENDER
   ======================================================= */
 
   return (
@@ -225,6 +244,8 @@ function Recycling() {
         }}
       >
         <div className="recycling-hero-overlay" />
+
+        {/* NAVBAR */}
 
         <header className="recycling-navbar">
           <Link
@@ -246,6 +267,8 @@ function Recycling() {
           </Link>
         </header>
 
+        {/* HERO CONTENT */}
+
         <div className="recycling-hero-content">
           <div className="recycling-eyebrow">
             <MapPin size={14} />
@@ -259,13 +282,14 @@ function Recycling() {
           </h1>
 
           <p>
-            Explore recycling and collection research across
-            Ota, Sango-Ota, Abeokuta North, Obafemi Owode
-            and Odeda. Check the verification status and
-            contact organisations before visiting.
+            Explore researched recycling facilities,
+            collection services and environmental contacts
+            across Ogun State and nearby areas. Check
+            verification details and contact organisations
+            before visiting.
           </p>
 
-          {/* ORIGINAL SEARCH FIELD */}
+          {/* SEARCH */}
 
           <div className="recycling-search-shell">
             <div className="recycling-search-field">
@@ -304,6 +328,8 @@ function Recycling() {
             </button>
           </div>
 
+          {/* ORIGINAL LOCATION FEEDBACK */}
+
           {locationMessage && (
             <div
               className="location-message"
@@ -323,7 +349,9 @@ function Recycling() {
       <section className="recycling-content">
         <div className="recycling-container">
 
-          {/* ORIGINAL SUMMARY DESIGN */}
+          {/* ===============================================
+              SUMMARY
+          =============================================== */}
 
           <div
             className="recycling-live-summary"
@@ -364,7 +392,9 @@ function Recycling() {
             </div>
           </div>
 
-          {/* ORIGINAL GEMINI AI MATCH */}
+          {/* ===============================================
+              ORIGINAL GEMINI AI MATCH
+          =============================================== */}
 
           {initialMaterial && (
             <div className="recycling-ai-match">
@@ -393,7 +423,9 @@ function Recycling() {
             </div>
           )}
 
-          {/* ORIGINAL MATERIAL FILTERS */}
+          {/* ===============================================
+              ORIGINAL MATERIAL FILTERS
+          =============================================== */}
 
           <div className="recycling-filter-row recycling-live-filters">
             <div className="recycling-filter-label">
@@ -418,10 +450,16 @@ function Recycling() {
             </div>
           </div>
 
-          {/* ORIGINAL AUDIENCE FILTER
-              + NEW AREA AND SERVICE FILTERS */}
+          {/* ===============================================
+              ORGANISATION, AREA AND SERVICE FILTERS
+
+              Preserves the existing audience filter.
+          =============================================== */}
 
           <div className="recycling-live-audience">
+
+            {/* ORGANISATION TYPE */}
+
             <label htmlFor="recycling-audience">
               Organisation type
             </label>
@@ -446,8 +484,10 @@ function Recycling() {
               </option>
             </select>
 
+            {/* RESEARCH AREA */}
+
             <label htmlFor="recycling-region">
-              Area
+              Research area
             </label>
 
             <select
@@ -458,11 +498,16 @@ function Recycling() {
               }
             >
               {regionFilters.map((value) => (
-                <option key={value} value={value}>
+                <option
+                  key={value}
+                  value={value}
+                >
                   {value}
                 </option>
               ))}
             </select>
+
+            {/* SERVICE TYPE */}
 
             <label htmlFor="recycling-service">
               Service
@@ -476,11 +521,16 @@ function Recycling() {
               }
             >
               {serviceFilters.map((value) => (
-                <option key={value} value={value}>
+                <option
+                  key={value}
+                  value={value}
+                >
                   {value}
                 </option>
               ))}
             </select>
+
+            {/* RESET */}
 
             <button
               type="button"
@@ -491,12 +541,12 @@ function Recycling() {
           </div>
 
           {/* =================================================
-              LOCATION LIST + DETAILS
+              LOCATION LIST AND DETAILS
           ================================================= */}
 
           <div className="recycling-locator">
 
-            {/* ORIGINAL LIST PANEL */}
+            {/* LOCATION LIST */}
 
             <div className="recycling-location-panel">
               <div className="location-panel-heading">
@@ -538,8 +588,9 @@ function Recycling() {
                     </h3>
 
                     <p>
-                      Try another material, organisation,
-                      service or area.
+                      Try another material,
+                      organisation, service
+                      or research area.
                     </p>
 
                     <button
@@ -553,11 +604,15 @@ function Recycling() {
               </div>
             </div>
 
-            {/* ORIGINAL DETAILS PANEL */}
+            {/* ===============================================
+                LOCATION DETAILS PANEL
+            =============================================== */}
 
             <div className="recycling-map-panel recycling-live-detail-panel">
               {selected ? (
-                <LocationDetails location={selected} />
+                <LocationDetails
+                  location={selected}
+                />
               ) : (
                 <div className="recycling-live-empty-panel">
                   <Recycle size={28} />
@@ -575,7 +630,9 @@ function Recycling() {
             </div>
           </div>
 
-          {/* ORIGINAL RESEARCH WARNING */}
+          {/* ===============================================
+              RESEARCH NOTICE
+          =============================================== */}
 
           <div className="recycling-prototype-note">
             <ShieldAlert size={18} />
@@ -598,7 +655,13 @@ function Recycling() {
               </p>
 
               <p>
-                No GPS distances have been invented.
+                Some organisations appear in research for
+                several areas without being physically
+                located in each area. No GPS distances
+                have been invented.
+              </p>
+
+              <p>
                 A separate research list also contains{" "}
                 {additionalResearchLeads.length} initiatives
                 requiring more specific location information.
@@ -612,7 +675,9 @@ function Recycling() {
 }
 
 /* =========================================================
-   ORIGINAL LOCATION CARD
+   LOCATION CARD
+
+   Preserves original design and selection functionality.
 ========================================================= */
 
 function LocationCard({
@@ -681,16 +746,31 @@ function LocationCard({
 /* =========================================================
    LOCATION DETAILS
 
-   Preserves the old visual structure and actions.
+   Preserves:
+   - Map placeholder
+   - Organisation details
+   - Address and hours
+   - Accepted materials
+   - Research source
+   - Maps and phone actions
+   - Verification warning
+
+   Adds:
+   - Physical/listed area distinction
+   - Additional research-area references
 ========================================================= */
 
 function LocationDetails({ location }) {
   const hasMapSearch = canSearchMaps(location);
-  const hasPhone = (location.phones ?? []).length > 0;
+
+  const hasPhone =
+    (location.phones ?? []).length > 0;
 
   return (
     <>
-      {/* ORIGINAL MAP PLACEHOLDER */}
+      {/* ===============================================
+          ORIGINAL MAP PLACEHOLDER
+      =============================================== */}
 
       <div className="recycling-live-map-placeholder">
         <div
@@ -725,7 +805,9 @@ function LocationDetails({ location }) {
         </div>
       </div>
 
-      {/* ORIGINAL LOCATION INFORMATION */}
+      {/* ===============================================
+          LOCATION INFORMATION
+      =============================================== */}
 
       <div className="selected-location-detail">
         <div className="selected-location-top">
@@ -764,7 +846,7 @@ function LocationDetails({ location }) {
           </span>
         </div>
 
-        {/* ORIGINAL NOTES */}
+        {/* NOTES */}
 
         <p>
           {location.notes}
@@ -793,7 +875,9 @@ function LocationDetails({ location }) {
           </div>
         </div>
 
-        {/* RESEARCH INFORMATION */}
+        {/* ===============================================
+            RESEARCH INFORMATION
+        =============================================== */}
 
         <div className="recycling-live-context">
           <strong>
@@ -806,13 +890,34 @@ function LocationDetails({ location }) {
               : "Public and school drop-off eligibility has not been independently confirmed."}
           </span>
 
+          {/* PRIMARY LISTED AREA */}
+
           <span>
-            Research area: {location.region}
+            Primary listed area: {location.region}
+            {location.state
+              ? ` (${location.state} State)`
+              : ""}
           </span>
+
+          {/* ADDITIONAL RESEARCH AREAS */}
+
+          {(location.researchAreas ?? []).length > 0 && (
+            <span>
+              Also referenced in research for:{" "}
+              {location.researchAreas.join(", ")}.
+              This does not confirm proximity,
+              local pickup services or public
+              drop-off access in those areas.
+            </span>
+          )}
+
+          {/* SERVICE CATEGORY */}
 
           <span>
             Service category: {getServiceGroup(location)}
           </span>
+
+          {/* RESEARCH SOURCE */}
 
           <small>
             Source: {location.source ?? "Team research"}
@@ -824,7 +929,9 @@ function LocationDetails({ location }) {
           </small>
         </div>
 
-        {/* ORIGINAL ACTION BUTTONS */}
+        {/* ===============================================
+            ACTION BUTTONS
+        =============================================== */}
 
         <div className="selected-location-actions">
           {hasMapSearch ? (
@@ -862,16 +969,20 @@ function LocationDetails({ location }) {
           )}
         </div>
 
-        {/* ORIGINAL WARNING */}
+        {/* ===============================================
+            VERIFICATION WARNING
+        =============================================== */}
 
         <div className="recycling-live-warning">
           <ShieldAlert size={16} />
 
           <span>
-            Climatica has not independently confirmed that
-            this organisation currently operates, accepts
-            the reported materials or welcomes public
-            drop-offs. Some entries are pickup services,
+            Climatica has not independently confirmed
+            that this organisation currently operates,
+            accepts the reported materials or welcomes
+            public drop-offs.
+
+            Some entries are pickup services,
             partner leads or industrial facilities.
             Contact the organisation before taking action.
           </span>
